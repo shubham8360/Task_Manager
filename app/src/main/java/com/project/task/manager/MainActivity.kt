@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.project.task.manager.db.TaskDatabase
 import com.project.task.manager.repository.Repository
-import com.project.task.manager.screens.MainScreen
+import com.project.task.manager.ui.screens.MainScreen
 import com.project.task.manager.ui.theme.TaskManagerTheme
 import com.project.task.manager.vm.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint

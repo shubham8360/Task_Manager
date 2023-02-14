@@ -11,9 +11,10 @@ import kotlin.random.Random
 @Entity(tableName = TASK_TABLE)
 data class Task(
     @PrimaryKey(autoGenerate = true)
-    val id: Int? = Random.Default.nextInt(0,10000000),
+    val id: Int? = Random.Default.nextInt(0, 10000000),
     val tittle: String,
     val description: String,
     val taskTime: String,
-    val createdOn: String
+    val createdOn: String,
+    var isCompleted: Boolean = false
 ) : Parcelable

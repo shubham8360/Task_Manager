@@ -1,14 +1,15 @@
-package com.project.task.manager.components
+package com.project.task.manager.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -16,6 +17,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.SheetState
@@ -83,13 +88,14 @@ fun TaskInputDialog(
         Card(
             shape = RoundedCornerShape(8.sdp),
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
             elevation = CardDefaults.cardElevation(5.sdp)
         ) {
             ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.sdp)
+                    .padding(10.sdp)
             ) {
                 val (taskTittle,
                     taskDesc,
@@ -102,42 +108,60 @@ fun TaskInputDialog(
                         start.linkTo(parent.start)
                         top.linkTo(parent.top)
                         end.linkTo(parent.end)
-                    }, text = stringResource(R.string.add_your_task),
+                    },
+                    text = stringResource(R.string.add_your_task),
                     style = MaterialTheme.typography.titleLarge
                 )
-                OutlinedTextField(modifier = Modifier.constrainAs(taskTittle) {
-                    start.linkTo(parent.start)
-                    top.linkTo(dialogTitle.bottom)
-                    end.linkTo(parent.end)
-                }, value = tittleState,
+                OutlinedTextField(
+                    modifier = Modifier
+                        .constrainAs(taskTittle) {
+                            start.linkTo(parent.start)
+                            top.linkTo(dialogTitle.bottom)
+                            end.linkTo(parent.end)
+                            width = Dimension.fillToConstraints
+                        },
+                    value = tittleState,
                     onValueChange = {
                         tittleState = it
-                    }, label = {
+                    },
+                    label = {
                         Text(text = stringResource(id = R.string.task_tittle))
-                    })
-                OutlinedTextField(modifier = Modifier.constrainAs(taskDesc) {
-                    start.linkTo(taskTittle.start)
-                    top.linkTo(taskTittle.bottom)
-                    end.linkTo(taskTittle.end)
-                }, value = descState,
+                    },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    modifier = Modifier.constrainAs(taskDesc) {
+                        start.linkTo(taskTittle.start)
+                        top.linkTo(taskTittle.bottom)
+                        end.linkTo(taskTittle.end)
+                        width = Dimension.fillToConstraints
+                    },
+                    value = descState,
                     onValueChange = {
                         descState = it
-                    }, label = {
+                    },
+                    label = {
                         Text(text = stringResource(id = R.string.task_desc))
-                    })
-                OutlinedTextField(modifier = Modifier
-                    .constrainAs(taskTime) {
-                        start.linkTo(taskTittle.start)
-                        top.linkTo(taskDesc.bottom)
-                        end.linkTo(taskTittle.end)
-                    }, value = dateTimeState,
+                    }, maxLines = 3
+                )
+                OutlinedTextField(
+                    modifier = Modifier
+                        .constrainAs(taskTime) {
+                            start.linkTo(taskTittle.start)
+                            top.linkTo(taskDesc.bottom)
+                            end.linkTo(taskTittle.end)
+                            width = Dimension.fillToConstraints
+                        }, value = dateTimeState,
                     onValueChange = {
                         dateTimeState = it
-                    }, readOnly = true,
+                    },
+                    readOnly = true,
                     interactionSource = inputSourceState,
                     label = {
                         Text(text = stringResource(id = R.string.task_time))
-                    })
+                    },
+                    singleLine = true
+                )
 
 
                 Button(
@@ -149,7 +173,7 @@ fun TaskInputDialog(
                             end.linkTo(parent.end)
                         },
                     onClick = {
-                        val createdOn = LocalDateTime.now().toString()
+                        val createdOn = LocalDateTime.now().toLocalDate().toString()
                         if (tittleState.isNotEmpty() && descState.isNotEmpty() && dateTimeState.isNotEmpty()) {
                             onSubmit.invoke(tittleState, descState, dateTimeState, createdOn)
                         }
@@ -158,9 +182,8 @@ fun TaskInputDialog(
                     Text(text = stringResource(R.string.set_task_reminder))
                 }
             }
-            DateTimePickerDialog(sheetState) {
+            DateTimePickerDialog(Modifier, sheetState) {
                 dateTimeState = it.toString()
-                Log.d(TAG, "TaskInputDialog: $it")
             }
             if (inputSourceState.collectIsPressedAsState().value) {
                 sheetState.show()
@@ -174,7 +197,7 @@ fun TaskInputDialog(
 
 
 @Composable
-fun DateTimePickerDialog(state: SheetState, onDateChange: (LocalDateTime) -> Unit) {
+fun DateTimePickerDialog(modifier: Modifier, state: SheetState, onDateChange: (LocalDateTime) -> Unit) {
 
     val current = LocalDateTime.now()
     DateTimeDialog(
@@ -185,5 +208,26 @@ fun DateTimePickerDialog(state: SheetState, onDateChange: (LocalDateTime) -> Uni
             onDateChange.invoke(it)
         },
         properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppToolbar(
+    modifier: Modifier,
+    tittle: String,
+    scrollState: TopAppBarScrollBehavior,
+    icon: @Composable () -> Unit
+) {
+    TopAppBar(
+        modifier = modifier, title = {
+            Text(
+                text = tittle,
+                style = MaterialTheme.typography.headlineSmall,
+            )
+        },
+        navigationIcon = icon,
+        colors = TopAppBarDefaults.mediumTopAppBarColors(),
+        scrollBehavior = scrollState
     )
 }

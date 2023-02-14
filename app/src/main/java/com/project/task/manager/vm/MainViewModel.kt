@@ -10,8 +10,10 @@ import com.project.task.manager.repository.Repository
 import com.project.task.manager.utils.Constants.CURRENT_SCREEN
 import com.project.task.manager.utils.Constants.LATEST_TASKS
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,10 +25,12 @@ class MainViewModel @Inject constructor(
 
     val tasks = savedStateHandle.getStateFlow(LATEST_TASKS, emptyList<Task>())
     var inputDialogState = MutableStateFlow(false)
-    var _screen = savedStateHandle.getStateFlow(CURRENT_SCREEN, app.getString(R.string.home))
+    var screen = savedStateHandle.getStateFlow(CURRENT_SCREEN, app.getString(R.string.home))
 
     init {
-        viewModelScope.launch { getAllTask() }
+        viewModelScope.launch {
+            getAllTask()
+        }
     }
 
     fun setCurrentScreen(tittle: String) {
@@ -35,15 +39,20 @@ class MainViewModel @Inject constructor(
 
     private fun getAllTask() {
         viewModelScope.launch {
-            taskRepository.getAllTasks().collect { newList ->
-                savedStateHandle[LATEST_TASKS] = newList
+            withContext(Dispatchers.IO) {
+                taskRepository.getAllTasks().collect { newList ->
+                    savedStateHandle[LATEST_TASKS] = newList
+                }
             }
+
         }
     }
 
     fun upsertTask(task: Task) {
         viewModelScope.launch {
-            taskRepository.upsertTask(task)
+            withContext(Dispatchers.IO){
+                taskRepository.upsertTask(task)
+            }
         }
     }
 

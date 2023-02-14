@@ -1,5 +1,6 @@
-package com.project.task.manager.screens
+package com.project.task.manager.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -12,11 +13,13 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,24 +33,28 @@ import androidx.navigation.compose.rememberNavController
 import com.project.task.manager.R
 import com.project.task.manager.navigation.BottomBarScreens
 import com.project.task.manager.navigation.BottomNavGraph
+import com.project.task.manager.ui.components.AppToolbar
 import com.project.task.manager.vm.MainViewModel
 
+@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(viewModel: MainViewModel = viewModel()) {
+
+    val context = LocalContext.current
     val navController = rememberNavController()
-    val viewModel = viewModel<MainViewModel>()
-    val topBarTittleState = viewModel._screen.collectAsState().value
+    val topBarTittleState = viewModel.screen.collectAsState().value
+    val scrollState = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
     Scaffold(topBar = {
-        TopAppBar(title = {
-            Text(text = topBarTittleState)
-        },
-            navigationIcon = {
-                IconButton(onClick = {
-                }) {
-                    Icon(painter = painterResource(id = R.drawable.ic_menu), contentDescription = stringResource(R.string.back_button_cd))
-                }
-            })
+        AppToolbar(modifier = Modifier, tittle = topBarTittleState, scrollState) {
+            IconButton(onClick = {
+                Toast.makeText(context, "Under maintenance", Toast.LENGTH_SHORT).show()
+            }) {
+                Icon(painter = painterResource(id = R.drawable.ic_menu), contentDescription = stringResource(R.string.back_button_cd))
+            }
+        }
+
     }, bottomBar = {
         BottomBarScreen(navHostController = navController)
     }, floatingActionButton = {
@@ -65,8 +72,8 @@ fun MainScreen() {
 fun BottomBarScreen(navHostController: NavHostController = rememberNavController()) {
     val screens = listOf(
         BottomBarScreens.TaskScreen,
-        BottomBarScreens.CalenderScreen,
-        BottomBarScreens.CompletedTaskScreen
+        BottomBarScreens.CompletedTaskScreen,
+        BottomBarScreens.CalenderScreen
     )
     val navBackStackEntry by navHostController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination

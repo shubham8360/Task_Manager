@@ -8,9 +8,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.project.task.manager.screens.CalenderScreen
-import com.project.task.manager.screens.CompletedTaskScreen
-import com.project.task.manager.screens.TaskScreen
+import com.project.task.manager.ui.screens.CalenderScreen
+import com.project.task.manager.ui.screens.CompletedTaskScreen
+import com.project.task.manager.ui.screens.TaskScreen
 import com.project.task.manager.vm.MainViewModel
 
 @Preview
@@ -26,11 +26,12 @@ fun BottomNavGraph(
         composable(BottomBarScreens.TaskScreen.route) {
             TaskScreen(viewModel, modifier)
         }
-        composable(BottomBarScreens.CalenderScreen.route) {
-            CalenderScreen(viewModel, modifier)
-        }
+
         composable(BottomBarScreens.CompletedTaskScreen.route) {
             CompletedTaskScreen(viewModel, modifier)
+        }
+        composable(BottomBarScreens.CalenderScreen.route) {
+            CalenderScreen(viewModel, modifier)
         }
     }
 }

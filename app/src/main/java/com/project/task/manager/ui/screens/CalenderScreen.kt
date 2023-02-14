@@ -1,4 +1,4 @@
-package com.project.task.manager.screens
+package com.project.task.manager.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
