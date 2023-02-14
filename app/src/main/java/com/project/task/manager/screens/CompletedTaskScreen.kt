@@ -1,10 +1,13 @@
 package com.project.task.manager.screens
 
 import androidx.compose.runtime.Composable
-import com.project.task.manager.Greeting
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.project.task.manager.R
+import com.project.task.manager.vm.MainViewModel
 
 
 @Composable
-fun CompletedTaskScreen() {
-    Greeting(name = "CompletedTaskScreen")
+fun CompletedTaskScreen(viewModel: MainViewModel, modifier: Modifier) {
+    viewModel.setCurrentScreen(stringResource(id = R.string.task_completed))
 }

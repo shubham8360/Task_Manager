@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Task Manager</string>
+    <string name="back_button_cd">Back Button</string>
+    <string name="task_tittle">Task Tittle</string>
+    <string name="task_desc">Task Description</string>
+    <string name="task_created_on">Task Created On</string>
+    <string name="task_time">Task Time</string>
+    <string name="set_task_reminder">Set Task Reminder</string>
+    <string name="add_task_cd">Add Task</string>
+    <string name="add_your_task">Add Your task</string>
+    <string name="home">Home</string>
+    <string name="task_completed">Task Completed</string>
+    <string name="calender">Calender</string>
+
 </resources>
