@@ -63,7 +63,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
         }
     }
     ) {
-        BottomNavGraph(navHostController = navController, Modifier.padding(it))
+        BottomNavGraph(modifier = Modifier.padding(it), navHostController = navController)
     }
 }
 

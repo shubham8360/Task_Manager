@@ -31,7 +31,7 @@ import com.project.task.manager.vm.MainViewModel
 import ir.kaaveh.sdpcompose.sdp
 
 @Composable
-fun TaskScreen(viewModel: MainViewModel = viewModel(), modifier: Modifier) {
+fun TaskScreen(modifier: Modifier=Modifier,viewModel: MainViewModel = viewModel()) {
     viewModel.setCurrentScreen(stringResource(id = R.string.home))
     val dialogState = viewModel.inputDialogState.collectAsState()
 

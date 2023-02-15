@@ -16,22 +16,22 @@ import com.project.task.manager.vm.MainViewModel
 @Preview
 @Composable
 fun BottomNavGraph(
-    navHostController: NavHostController = rememberNavController(),
     modifier: Modifier = Modifier,
+    navHostController: NavHostController = rememberNavController()
 ) {
     val viewModel = viewModel<MainViewModel>()
     NavHost(
         navController = navHostController, startDestination = BottomBarScreens.TaskScreen.route
     ) {
         composable(BottomBarScreens.TaskScreen.route) {
-            TaskScreen(viewModel, modifier)
+            TaskScreen(viewModel = viewModel, modifier = modifier)
         }
 
         composable(BottomBarScreens.CompletedTaskScreen.route) {
-            CompletedTaskScreen(viewModel, modifier)
+            CompletedTaskScreen(modifier = modifier, viewModel = viewModel)
         }
         composable(BottomBarScreens.CalenderScreen.route) {
-            CalenderScreen(viewModel, modifier)
+            CalenderScreen(modifier = modifier, viewModel = viewModel)
         }
     }
 }
