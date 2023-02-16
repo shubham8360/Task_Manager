@@ -11,5 +11,11 @@
     <string name="home">Home</string>
     <string name="task_completed">Task Completed</string>
     <string name="calender">Calender</string>
+    <string name="calender_icon_in_dialog_cd">Calender Icon in Dialog</string>
+    <string name="set_alarm_icon_cd">Set Alarm Icon</string>
+    <string name="alarm_indicator_icon_cd">Alarm Indicator Icon</string>
+    <string name="event_note_taking_cd">Event Note Dialog Icon</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
 
 </resources>

@@ -1,5 +1,6 @@
 package com.project.task.manager.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -27,38 +28,49 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.maxkeppeker.sheets.core.icons.LibIcons
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.SheetState
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
-import com.maxkeppeler.sheets.date_time.DateTimeDialog
-import com.maxkeppeler.sheets.date_time.models.DateTimeConfig
-import com.maxkeppeler.sheets.date_time.models.DateTimeSelection
+import com.maxkeppeler.sheets.calendar.CalendarDialog
+import com.maxkeppeler.sheets.calendar.models.CalendarConfig
+import com.maxkeppeler.sheets.calendar.models.CalendarSelection
+import com.maxkeppeler.sheets.clock.ClockDialog
+import com.maxkeppeler.sheets.clock.models.ClockConfig
+import com.maxkeppeler.sheets.clock.models.ClockSelection
 import com.project.task.manager.R
+import com.project.task.manager.ui.theme.TaskManagerTheme
 import ir.kaaveh.sdpcompose.sdp
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 private const val TAG = "Components"
 
 @Composable
 fun TaskImage(
-    drawableResource: Int,
+    modifier: Modifier = Modifier,
+    painter: Painter,
     description: String,
-    modifier: Modifier = Modifier
+    colorFilter: ColorFilter? = null
 ) {
     Image(
         modifier = modifier
-            .size(40.dp)
+            .size(25.sdp)
             .clip(CircleShape),
-        painter = painterResource(id = drawableResource),
+        painter = painter,
         contentDescription = description,
+        colorFilter = colorFilter
     )
 }
 
@@ -67,7 +79,7 @@ fun TaskImage(
 fun TaskInputDialog(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
-    onSubmit: (tittle: String, desc: String, time: String, createdOn: String) -> Unit
+    onSubmit: (tittle: String, desc: String, time: String, createdOn: String) -> Unit, onCancel: () -> Unit
 ) {
     var tittleState by remember {
         mutableStateOf("")
@@ -82,11 +94,13 @@ fun TaskInputDialog(
         MutableInteractionSource()
     }
 
-    val sheetState = rememberSheetState()
+
+    val calenderState = rememberSheetState()
+    val clockState = rememberSheetState()
 
     Dialog(onDismissRequest = onDismissRequest, properties = properties) {
         Card(
-            shape = RoundedCornerShape(8.sdp),
+            shape = RoundedCornerShape(13.sdp),
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState()),
@@ -97,26 +111,41 @@ fun TaskInputDialog(
                     .fillMaxWidth()
                     .padding(10.sdp)
             ) {
-                val (taskTittle,
-                    taskDesc,
-                    dialogTitle,
-                    taskTime,
-                    taskSaveBtn
+                val (taskTittleTv,
+                    taskDescTv,
+                    dialogTitleTv,
+                    taskTimeTv,
+                    saveBtn,
+                    eventIndicatorIv,
+                    cancelBtn
                 ) = createRefs()
+                TaskImage(
+                    painter = painterResource(id = R.drawable.ic_event_note),
+                    description = stringResource(R.string.event_note_taking_cd),
+                    modifier = Modifier
+                        .constrainAs(eventIndicatorIv) {
+                            centerHorizontallyTo(parent)
+                            top.linkTo(parent.top)
+                        }
+                        .padding(vertical = 10.sdp)
+                        .size(40.sdp)
+                )
                 Text(
-                    modifier = Modifier.constrainAs(dialogTitle) {
-                        start.linkTo(parent.start)
-                        top.linkTo(parent.top)
-                        end.linkTo(parent.end)
-                    },
+                    modifier = Modifier
+                        .constrainAs(dialogTitleTv) {
+                            start.linkTo(parent.start)
+                            top.linkTo(eventIndicatorIv.bottom)
+                            end.linkTo(parent.end)
+                        }
+                        .padding(bottom = 20.sdp),
                     text = stringResource(R.string.add_your_task),
                     style = MaterialTheme.typography.titleLarge
                 )
                 OutlinedTextField(
                     modifier = Modifier
-                        .constrainAs(taskTittle) {
+                        .constrainAs(taskTittleTv) {
                             start.linkTo(parent.start)
-                            top.linkTo(dialogTitle.bottom)
+                            top.linkTo(dialogTitleTv.bottom)
                             end.linkTo(parent.end)
                             width = Dimension.fillToConstraints
                         },
@@ -130,10 +159,10 @@ fun TaskInputDialog(
                     singleLine = true
                 )
                 OutlinedTextField(
-                    modifier = Modifier.constrainAs(taskDesc) {
-                        start.linkTo(taskTittle.start)
-                        top.linkTo(taskTittle.bottom)
-                        end.linkTo(taskTittle.end)
+                    modifier = Modifier.constrainAs(taskDescTv) {
+                        start.linkTo(taskTittleTv.start)
+                        top.linkTo(taskTittleTv.bottom)
+                        end.linkTo(taskTittleTv.end)
                         width = Dimension.fillToConstraints
                     },
                     value = descState,
@@ -146,10 +175,10 @@ fun TaskInputDialog(
                 )
                 OutlinedTextField(
                     modifier = Modifier
-                        .constrainAs(taskTime) {
-                            start.linkTo(taskTittle.start)
-                            top.linkTo(taskDesc.bottom)
-                            end.linkTo(taskTittle.end)
+                        .constrainAs(taskTimeTv) {
+                            start.linkTo(taskTittleTv.start)
+                            top.linkTo(taskDescTv.bottom)
+                            end.linkTo(taskTittleTv.end)
                             width = Dimension.fillToConstraints
                         }, value = dateTimeState,
                     onValueChange = {
@@ -166,11 +195,11 @@ fun TaskInputDialog(
 
                 Button(
                     modifier = Modifier
-                        .padding(top = 10.sdp)
-                        .constrainAs(taskSaveBtn) {
-                            start.linkTo(parent.start)
-                            top.linkTo(taskTime.bottom)
+                        .padding(vertical = 10.sdp)
+                        .constrainAs(saveBtn) {
+                            top.linkTo(taskTimeTv.bottom)
                             end.linkTo(parent.end)
+                            bottom.linkTo(parent.bottom)
                         },
                     onClick = {
                         val createdOn = LocalDateTime.now().toLocalDate().toString()
@@ -179,14 +208,33 @@ fun TaskInputDialog(
                         }
                     },
                 ) {
-                    Text(text = stringResource(R.string.set_task_reminder))
+                    Text(text = stringResource(R.string.save))
+                }
+                Button(modifier = Modifier
+                    .padding(10.sdp)
+                    .constrainAs(cancelBtn) {
+                        end.linkTo(saveBtn.start)
+                        top.linkTo(saveBtn.top)
+                        bottom.linkTo(saveBtn.bottom)
+                    },
+                    onClick = { onCancel.invoke() }) {
+                    Text(text = stringResource(R.string.cancel))
                 }
             }
-            DateTimePickerDialog(Modifier, sheetState) {
-                dateTimeState = it.toString()
-            }
+            var localSelectedDate: LocalDate = LocalDate.now()
+            CustomCalenderDialog(state = calenderState, onDateChange = {
+                localSelectedDate = it
+                clockState.show()
+            })
+            CustomClockDialog(state = clockState,
+                onTimeSelect = { selectedLocalTime ->
+                    val localDateTime = LocalDateTime.of(localSelectedDate, selectedLocalTime)
+                    dateTimeState = localDateTime.toString()
+                })
+
             if (inputSourceState.collectIsPressedAsState().value) {
-                sheetState.show()
+                Log.d(TAG, "TaskInputDialog: $inputSourceState")
+                calenderState.show()
             }
 
         }
@@ -195,19 +243,56 @@ fun TaskInputDialog(
 
 }
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateTimePickerDialog(modifier: Modifier, state: SheetState, onDateChange: (LocalDateTime) -> Unit) {
-
+fun CustomCalenderDialog(state: SheetState, onDateChange: (LocalDate) -> Unit) {
     val current = LocalDateTime.now()
-    DateTimeDialog(
+    CalendarDialog(
         state = state,
-        config = DateTimeConfig(minYear = current.year, maxYear = current.year + 5),
-        header = Header.Default(stringResource(id = R.string.task_time), icon = IconSource(painter = painterResource(id = R.drawable.ic_calender))),
-        selection = DateTimeSelection.DateTime {
-            onDateChange.invoke(it)
+        selection = CalendarSelection.Date {
+            onDateChange(it)
         },
-        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true)
+        config = CalendarConfig(
+            monthSelection = true,
+            yearSelection = true,
+            minYear = current.year,
+            maxYear = current.year + 2
+        ),
+        header = Header.Default(
+            title = stringResource(id = R.string.calender),
+            icon = IconSource(
+                painter = painterResource(id = R.drawable.ic_calender),
+                contentDescription = stringResource(R.string.calender_icon_in_dialog_cd)
+            )
+        ),
+        properties = DialogProperties(dismissOnClickOutside = true, dismissOnBackPress = true)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomClockDialog(state: SheetState, onTimeSelect: (LocalTime) -> Unit) {
+    ClockDialog(
+        state = state,
+        selection = ClockSelection.HoursMinutes { hours, minutes ->
+            val time = LocalTime.of(hours, minutes)
+            onTimeSelect(time)
+        },
+        config = ClockConfig(
+            defaultTime = LocalTime.now(),
+            is24HourFormat = false,
+            icons = LibIcons.TwoTone
+        ),
+        header = Header.Default(
+            "Set Alarm",
+            IconSource(
+                painter = painterResource(id = R.drawable.ic_alarm),
+                contentDescription = stringResource(R.string.set_alarm_icon_cd)
+            )
+        ), properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
     )
 }
 
@@ -230,4 +315,23 @@ fun AppToolbar(
         colors = TopAppBarDefaults.mediumTopAppBarColors(),
         scrollBehavior = scrollState
     )
+}
+
+
+
+@Preview
+@Composable
+private fun DefaultPreviewTaskInputDialog() {
+    TaskManagerTheme {
+        TaskInputDialog(onDismissRequest = { }, onSubmit = { _, _, _, _ -> }) {
+
+        }
+    }
+}
+@Preview(showBackground = true)
+@Composable
+private fun DefaultPreviewTaskImage() {
+    TaskManagerTheme {
+        TaskImage(painter = painterResource(id = R.drawable.ic_alarm), description ="" )
+    }
 }

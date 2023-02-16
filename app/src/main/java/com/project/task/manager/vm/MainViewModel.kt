@@ -7,8 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.project.task.manager.R
 import com.project.task.manager.models.Task
 import com.project.task.manager.repository.Repository
+import com.project.task.manager.utils.Constants.COMPLETED_TASKS
 import com.project.task.manager.utils.Constants.CURRENT_SCREEN
-import com.project.task.manager.utils.Constants.LATEST_TASKS
+import com.project.task.manager.utils.Constants.PENDING_TASKS
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,8 @@ class MainViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : AndroidViewModel(app) {
 
-    val tasks = savedStateHandle.getStateFlow(LATEST_TASKS, emptyList<Task>())
+    val completedTasks = savedStateHandle.getStateFlow(COMPLETED_TASKS, emptyList<Task>())
+    val pendingTasks = savedStateHandle.getStateFlow(PENDING_TASKS, emptyList<Task>())
     var inputDialogState = MutableStateFlow(false)
     var screen = savedStateHandle.getStateFlow(CURRENT_SCREEN, app.getString(R.string.home))
 
@@ -41,7 +43,9 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 taskRepository.getAllTasks().collect { newList ->
-                    savedStateHandle[LATEST_TASKS] = newList
+                    val partitionedList = newList.partition { it.isCompleted }
+                    savedStateHandle[COMPLETED_TASKS] = partitionedList.first
+                    savedStateHandle[PENDING_TASKS] = partitionedList.second
                 }
             }
 
@@ -50,7 +54,7 @@ class MainViewModel @Inject constructor(
 
     fun upsertTask(task: Task) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 taskRepository.upsertTask(task)
             }
         }

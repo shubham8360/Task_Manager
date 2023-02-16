@@ -34,6 +34,7 @@ import com.project.task.manager.R
 import com.project.task.manager.navigation.BottomBarScreens
 import com.project.task.manager.navigation.BottomNavGraph
 import com.project.task.manager.ui.components.AppToolbar
+import com.project.task.manager.utils.Constants
 import com.project.task.manager.vm.MainViewModel
 
 @Preview
@@ -43,11 +44,11 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
 
     val context = LocalContext.current
     val navController = rememberNavController()
-    val topBarTittleState = viewModel.screen.collectAsState().value
+    val topBarTittleState = viewModel.screen.collectAsState()
     val scrollState = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     Scaffold(topBar = {
-        AppToolbar(modifier = Modifier, tittle = topBarTittleState, scrollState) {
+        AppToolbar(modifier = Modifier, tittle = topBarTittleState.value, scrollState) {
             IconButton(onClick = {
                 Toast.makeText(context, "Under maintenance", Toast.LENGTH_SHORT).show()
             }) {
@@ -58,8 +59,10 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
     }, bottomBar = {
         BottomBarScreen(navHostController = navController)
     }, floatingActionButton = {
-        FloatingActionButton(onClick = { viewModel.inputDialogState.value = !viewModel.inputDialogState.value }) {
-            Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add_task_cd))
+        if (topBarTittleState.value == Constants.HOME_SCREEN) {
+            FloatingActionButton(onClick = { viewModel.inputDialogState.value = !viewModel.inputDialogState.value }) {
+                Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add_task_cd))
+            }
         }
     }
     ) {

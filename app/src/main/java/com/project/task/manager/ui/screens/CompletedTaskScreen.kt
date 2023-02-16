@@ -19,11 +19,13 @@ import ir.kaaveh.sdpcompose.sdp
 @Composable
 fun CompletedTaskScreen(modifier: Modifier = Modifier, viewModel: MainViewModel = viewModel()) {
     viewModel.setCurrentScreen(stringResource(id = R.string.task_completed))
-    val taskListState = viewModel.tasks.collectAsState()
-    val filteredList = taskListState.value.filter { it.isCompleted }
+    val taskListState = viewModel.completedTasks.collectAsState()
+//    val filteredList = taskListState.value.filter { it.isCompleted }
     LazyColumn(modifier = modifier) {
-        items(filteredList) {
-            TaskListItem(viewModel, it)
+        items(taskListState.value) {
+            TaskListItem(task = it) { newTask ->
+                viewModel.upsertTask(task = newTask)
+            }
             Divider(Modifier.padding(vertical = 3.sdp), color = Color.Transparent)
         }
     }
