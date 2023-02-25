@@ -17,5 +17,9 @@
     <string name="event_note_taking_cd">Event Note Dialog Icon</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="grid_icon_cd">Grid icon</string>
+    <string name="grid">Grid</string>
+    <string name="list">List</string>
+    <string name="more_icon_cd">More vert Icon</string>
 
 </resources>

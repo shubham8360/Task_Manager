@@ -30,9 +30,7 @@ class MainViewModel @Inject constructor(
     var screen = savedStateHandle.getStateFlow(CURRENT_SCREEN, app.getString(R.string.home))
 
     init {
-        viewModelScope.launch {
-            getAllTask()
-        }
+        getAllTask()
     }
 
     fun setCurrentScreen(tittle: String) {

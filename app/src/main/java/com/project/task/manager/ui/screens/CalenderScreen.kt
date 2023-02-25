@@ -10,6 +10,7 @@ import com.project.task.manager.vm.MainViewModel
 @Composable
 fun CalenderScreen(modifier: Modifier = Modifier, viewModel: MainViewModel) {
     viewModel.setCurrentScreen(stringResource(id = R.string.calender))
+
     ConstraintLayout {
 
     }

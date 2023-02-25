@@ -7,31 +7,24 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -49,13 +42,17 @@ import com.maxkeppeler.sheets.clock.ClockDialog
 import com.maxkeppeler.sheets.clock.models.ClockConfig
 import com.maxkeppeler.sheets.clock.models.ClockSelection
 import com.project.task.manager.R
+import com.project.task.manager.models.Task
 import com.project.task.manager.ui.theme.TaskManagerTheme
+import com.project.task.manager.utils.Constants
+import com.project.task.manager.utils.formatTaskTime
 import ir.kaaveh.sdpcompose.sdp
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-private const val TAG = "Components"
+private const val TAG = "Component"
 
 @Composable
 fun TaskImage(
@@ -94,6 +91,7 @@ fun TaskInputDialog(
         MutableInteractionSource()
     }
 
+    val scope = rememberCoroutineScope()
 
     val calenderState = rememberSheetState()
     val clockState = rememberSheetState()
@@ -202,10 +200,13 @@ fun TaskInputDialog(
                             bottom.linkTo(parent.bottom)
                         },
                     onClick = {
-                        val createdOn = LocalDateTime.now().toLocalDate().toString()
-                        if (tittleState.isNotEmpty() && descState.isNotEmpty() && dateTimeState.isNotEmpty()) {
-                            onSubmit.invoke(tittleState, descState, dateTimeState, createdOn)
+                        scope.launch {
+                            val createdOn = LocalDateTime.now().toLocalDate().toString()
+                            if (tittleState.isNotEmpty() && descState.isNotEmpty() && dateTimeState.isNotEmpty()) {
+                                onSubmit.invoke(tittleState, descState, dateTimeState, createdOn)
+                            }
                         }
+
                     },
                 ) {
                     Text(text = stringResource(R.string.save))
@@ -302,6 +303,7 @@ fun AppToolbar(
     modifier: Modifier,
     tittle: String,
     scrollState: TopAppBarScrollBehavior,
+    popMenuState: MutableState<Boolean>,
     icon: @Composable () -> Unit
 ) {
     TopAppBar(
@@ -313,25 +315,147 @@ fun AppToolbar(
         },
         navigationIcon = icon,
         colors = TopAppBarDefaults.mediumTopAppBarColors(),
-        scrollBehavior = scrollState
+        scrollBehavior = scrollState,
+        actions = {
+            IconButton(onClick = { popMenuState.value = !popMenuState.value }) {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_icon_cd))
+            }
+            DropdownMenu(expanded = popMenuState.value, onDismissRequest = { popMenuState.value = !popMenuState.value }) {
+                DropdownMenuItem(text = { Text(text = stringResource(R.string.grid)) },
+                    onClick = {
+                        popMenuState.value = !popMenuState.value
+                    },
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_grid),
+                            contentDescription = stringResource(id = R.string.grid_icon_cd)
+                        )
+                    }
+                )
+                DropdownMenuItem(text = { Text(text = stringResource(R.string.list)) }, onClick = {
+                    popMenuState.value = !popMenuState.value
+                },
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_task_list),
+                            contentDescription = stringResource(id = R.string.grid_icon_cd)
+                        )
+                    }
+                )
+            }
+        }
     )
 }
 
+@Preview
+@Composable
+fun TaskListItem(
+    task: Task = Constants.PREVIEW_TASK, onTaskStatusChange: (updatedTask: Task) -> Unit = {}
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 5.sdp)
+            .wrapContentHeight()
+    ) {
+        var checkedState by rememberSaveable {
+            mutableStateOf(false)
+        }
+        checkedState = task.isCompleted
+        ConstraintLayout(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(5.sdp)
+        ) {
+            val (taskTittleTv, taskDescTv, taskCreatedOnTv, taskTimeTv, taskStatusCB, alarmIndicatorIv) = createRefs()
+
+            Checkbox(modifier = Modifier.constrainAs(taskStatusCB) {
+                start.linkTo(parent.start)
+                top.linkTo(parent.top)
+                bottom.linkTo(parent.bottom)
+            }, checked = checkedState, onCheckedChange = {
+                checkedState = it
+                val newTask = task.apply {
+                    isCompleted = checkedState
+                }
+                onTaskStatusChange(newTask)
+            })
+
+            Text(
+                text = task.tittle, style = MaterialTheme.typography.titleLarge, modifier = Modifier.constrainAs(taskTittleTv) {
+                    start.linkTo(taskStatusCB.end)
+                    top.linkTo(parent.top)
+                }, textDecoration = if (checkedState) TextDecoration.LineThrough else TextDecoration.None
+            )
+
+            Text(
+                text = task.description,
+                modifier = Modifier.constrainAs(taskDescTv) {
+                    start.linkTo(taskTittleTv.start)
+                    top.linkTo(taskTittleTv.bottom)
+                },
+                textDecoration = if (checkedState) TextDecoration.LineThrough else TextDecoration.None,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Text(
+                text = task.taskTime.formatTaskTime(), modifier = Modifier.constrainAs(taskTimeTv) {
+                    start.linkTo(taskTittleTv.start)
+                    top.linkTo(taskDescTv.bottom)
+                }, textDecoration = if (checkedState) TextDecoration.LineThrough else TextDecoration.None
+            )
+            Text(
+                text = task.createdOn,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier
+                    .padding(horizontal = 5.sdp, vertical = 5.sdp)
+                    .constrainAs(taskCreatedOnTv) {
+                        end.linkTo(parent.end)
+                    },
+                textDecoration = if (checkedState) TextDecoration.LineThrough else TextDecoration.None
+            )
+            TaskImage(
+                modifier = Modifier.constrainAs(alarmIndicatorIv) {
+                    end.linkTo(taskCreatedOnTv.end)
+                    start.linkTo(taskCreatedOnTv.start)
+                    top.linkTo(taskCreatedOnTv.bottom)
+                    bottom.linkTo(parent.bottom)
+                },
+                painter = painterResource(id = if (checkedState) R.drawable.ic_checked else R.drawable.ic_alarm),
+                description = stringResource(R.string.alarm_indicator_icon_cd),
+                colorFilter = ColorFilter.tint(
+                    if (checkedState) MaterialTheme.colorScheme.secondary
+                    else MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+    }
+
+}
 
 
 @Preview
 @Composable
 private fun DefaultPreviewTaskInputDialog() {
     TaskManagerTheme {
-        TaskInputDialog(onDismissRequest = { }, onSubmit = { _, _, _, _ -> }) {
+        TaskInputDialog(onDismissRequest = {}, onSubmit = { _, _, _, _ -> }) {
 
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 private fun DefaultPreviewTaskImage() {
     TaskManagerTheme {
-        TaskImage(painter = painterResource(id = R.drawable.ic_alarm), description ="" )
+        val scrollState = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+        val popMenuState = remember {
+            mutableStateOf(false)
+        }
+        AppToolbar(modifier = Modifier, tittle = Constants.HOME_SCREEN, scrollState = scrollState, popMenuState = popMenuState) {
+        }
     }
 }

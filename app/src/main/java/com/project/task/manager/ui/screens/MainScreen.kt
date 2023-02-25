@@ -5,19 +5,8 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,16 +35,19 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
     val navController = rememberNavController()
     val topBarTittleState = viewModel.screen.collectAsState()
     val scrollState = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val popUpMenuState = remember {
+        mutableStateOf(false)
+    }
+
 
     Scaffold(topBar = {
-        AppToolbar(modifier = Modifier, tittle = topBarTittleState.value, scrollState) {
+        AppToolbar(modifier = Modifier, tittle = topBarTittleState.value, scrollState = scrollState, popMenuState = popUpMenuState) {
             IconButton(onClick = {
                 Toast.makeText(context, "Under maintenance", Toast.LENGTH_SHORT).show()
             }) {
                 Icon(painter = painterResource(id = R.drawable.ic_menu), contentDescription = stringResource(R.string.back_button_cd))
             }
         }
-
     }, bottomBar = {
         BottomBarScreen(navHostController = navController)
     }, floatingActionButton = {
