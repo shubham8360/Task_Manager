@@ -1,6 +1,7 @@
 package com.project.task.manager.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -8,6 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -34,29 +36,43 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
     val context = LocalContext.current
     val navController = rememberNavController()
     val topBarTittleState = viewModel.screen.collectAsState()
-    val scrollState = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollState = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val popUpMenuState = remember {
         mutableStateOf(false)
     }
 
 
-    Scaffold(topBar = {
-        AppToolbar(modifier = Modifier, tittle = topBarTittleState.value, scrollState = scrollState, popMenuState = popUpMenuState) {
-            IconButton(onClick = {
-                Toast.makeText(context, "Under maintenance", Toast.LENGTH_SHORT).show()
-            }) {
-                Icon(painter = painterResource(id = R.drawable.ic_menu), contentDescription = stringResource(R.string.back_button_cd))
+    Scaffold(modifier =Modifier.nestedScroll(scrollState.nestedScrollConnection),
+        topBar = {
+            AppToolbar(
+                modifier = Modifier,
+                tittle = topBarTittleState.value,
+                scrollState = scrollState,
+                popMenuState = popUpMenuState
+            ) {
+                IconButton(onClick = {
+                    Toast.makeText(context, "Under maintenance", Toast.LENGTH_SHORT).show()
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_menu),
+                        contentDescription = stringResource(R.string.back_button_cd)
+                    )
+                }
+            }
+        }, bottomBar = {
+            BottomBarScreen(navHostController = navController)
+        }, floatingActionButton = {
+            if (topBarTittleState.value == Constants.HOME_SCREEN) {
+                FloatingActionButton(onClick = {
+                    viewModel.inputDialogState.value = !viewModel.inputDialogState.value
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.add_task_cd)
+                    )
+                }
             }
         }
-    }, bottomBar = {
-        BottomBarScreen(navHostController = navController)
-    }, floatingActionButton = {
-        if (topBarTittleState.value == Constants.HOME_SCREEN) {
-            FloatingActionButton(onClick = { viewModel.inputDialogState.value = !viewModel.inputDialogState.value }) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = stringResource(R.string.add_task_cd))
-            }
-        }
-    }
     ) {
         BottomNavGraph(modifier = Modifier.padding(it), navHostController = navController)
     }
@@ -74,7 +90,11 @@ fun BottomBarScreen(navHostController: NavHostController = rememberNavController
     val currentDestination = navBackStackEntry?.destination
     NavigationBar {
         screens.forEach { screen ->
-            AddItem(screen = screen, currentDestination = currentDestination, navController = navHostController)
+            AddItem(
+                screen = screen,
+                currentDestination = currentDestination,
+                navController = navHostController
+            )
         }
     }
 

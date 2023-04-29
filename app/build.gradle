@@ -4,6 +4,8 @@ plugins {
     id 'kotlin-parcelize'
     id 'kotlin-kapt'
     id("com.google.dagger.hilt.android")
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -30,18 +32,18 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-        coreLibraryDesugaringEnabled  true
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.2.0'
+        kotlinCompilerExtensionVersion '1.4.0'
     }
     packagingOptions {
         resources {
@@ -52,34 +54,43 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+    implementation 'androidx.core:core-ktx:1.10.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    implementation 'androidx.activity:activity-compose:1.7.1'
 
-    implementation platform('androidx.compose:compose-bom:2023.01.00')
-    implementation 'androidx.activity:activity-compose'
-    implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation 'androidx.appcompat:appcompat:1.6.0'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
-    debugImplementation "androidx.compose.ui:ui-tooling"
-    debugImplementation "androidx.compose.ui:ui-test-manifest"
-    implementation 'androidx.compose.material3:material3:1.0.1'
-    implementation("androidx.compose.material3:material3-window-size-class:1.0.1")
+    implementation "androidx.compose.ui:ui:1.4.2"
+    implementation 'androidx.compose.ui:ui-graphics:1.4.2'
+    implementation "androidx.compose.ui:ui-tooling-preview:1.4.2"
+    implementation 'androidx.core:core-ktx:1.10.0'
+    implementation 'com.google.firebase:firebase-database-ktx:20.2.0'
+
+    debugImplementation "androidx.compose.ui:ui-tooling:1.4.2"
+    implementation 'androidx.compose.material3:material3:1.1.0-rc01'
+    implementation 'androidx.compose.material3:material3-window-size-class:1.1.0-rc01'
+    debugImplementation "androidx.compose.ui:ui-test-manifest:1.4.2"
 
     testImplementation 'junit:junit:4.13.2'
+
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:1.4.2"
+    implementation("androidx.compose.material3:material3-window-size-class:1.0.1")
+
+    //firebase
+    implementation platform('com.google.firebase:firebase-bom:31.2.3')
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 
     // sdp for compose
     implementation 'com.github.Kaaveh:sdp-compose:1.1.0'
 
     //view model
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1"
-
-    //constraint Layout
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1"
 
     //navigation in compose
     implementation("androidx.navigation:navigation-compose:2.5.3")
@@ -87,27 +98,23 @@ dependencies {
     //room library
     var room_version = "2.5.0"
 
-    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-runtime:2.5.1")
     annotationProcessor("androidx.room:room-compiler:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
     // coroutines support for Room
-    implementation("androidx.room:room-ktx:$room_version")
+    implementation("androidx.room:room-ktx:2.5.1")
 
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     //hilt-dagger
-    implementation("com.google.dagger:hilt-android:2.44.2")
-    kapt("com.google.dagger:hilt-android-compiler:2.44.2")
+    implementation('com.google.dagger:hilt-android:2.45')
+    kapt("com.google.dagger:hilt-android-compiler:2.45")
 
     //desugar
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.2'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 
-    //date picker
-    var sheetVersion="1.0.4"
-    implementation "com.maxkeppeler.sheets-compose-dialogs:core:$sheetVersion" // necessary
-    implementation 'com.maxkeppeler.sheets-compose-dialogs:date-time:1.0.4'
+    //work manager
+    implementation "androidx.work:work-runtime-ktx:2.8.1"
+    implementation('androidx.lifecycle:lifecycle-runtime-compose:2.6.1')
 
-    implementation "com.maxkeppeler.sheets-compose-dialogs:calendar:$sheetVersion"
-    // CLOCK
-    implementation("com.maxkeppeler.sheets-compose-dialogs:clock:1.0.4")
 }
